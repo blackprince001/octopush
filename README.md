@@ -6,12 +6,12 @@ Features
 
 - [X] Upload
 - [X] Download
-- [] Grouped Upload (recursively uploading every file in group)
-- [] Grouped Download (recursively downloading every file in group)
+- [ ] Grouped Upload (recursively uploading every file in group)
+- [ ] Grouped Download (recursively downloading every file in group)
 
 Optionals
 
-- [] Checksum compute to verify data compactness
+- [ ] Checksum compute to verify data compactness
 
 (more features to be added to feature list.)
 
