@@ -29,9 +29,7 @@ var db *gorm.DB = database.GetDatabaseConnection()
 func UploadHandler(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
-		c.JSON(
-			http.StatusBadRequest,
-			gin.H{"error": err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
@@ -46,31 +44,28 @@ func UploadHandler(c *gin.Context) {
 			resultChan <- err
 			return
 		}
+		resultChan <- nil
+	}()
 
-		fileRecord := models.File{
+	go func() {
+		err := db.Create(&models.File{
 			ShortLink:   shortLink,
 			Filename:    file.Filename,
 			TimeUpdated: time.Now(),
-		}
-
-		err = db.Create(&fileRecord).Error
-
+		}).Error
 		if err != nil {
 			resultChan <- err
 		}
 	}()
 
-	c.JSON(http.StatusAccepted, gin.H{
-		"message": "File upload in progress",
-		"url":     shortLink,
-	})
-
-	go func() {
-		result := <-resultChan
-
-		log.Printf("Error processing upload for %s: %v", shortLink, result)
+	result := <-resultChan
+	if result != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error()})
 		cleanupUpload(shortLink, file.Filename)
-	}()
+		return
+	}
+
+	c.JSON(http.StatusAccepted, gin.H{"message": "File upload in progress", "url": shortLink})
 }
 
 func cleanupUpload(shortLink, filename string) {
@@ -133,7 +128,7 @@ func DownloadHandler(c *gin.Context) {
 
 	select {
 	case <-done:
-	case <-time.After(5 * time.Second): // wait time for serving item
+	case <-time.After(2 * time.Second): // wait time for serving item
 		c.JSON(
 			http.StatusInternalServerError,
 			gin.H{"error": "Operation timed out"})
