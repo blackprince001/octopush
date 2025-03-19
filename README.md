@@ -1,13 +1,11 @@
 
 # Octopush - A Concurrent File Server
 
-##
-
 Octopush is a Go-based file server designed to handle file uploads, downloads, and other related operations in a concurrent manner. The project utilizes the Gin framework for routing and GORM for database interactions.
 
-### Usage
+## Usage
 
-#### Running the Server
+### Running the Server
 
 1. **Clone the Repository**:
 
@@ -35,7 +33,7 @@ Octopush is a Go-based file server designed to handle file uploads, downloads, a
    docker run -p 5678:5678 octopush
    ```
 
-#### API Endpoints
+### API Endpoints
 
 - **Upload File**:
 
@@ -49,14 +47,14 @@ Octopush is a Go-based file server designed to handle file uploads, downloads, a
   curl http://localhost:5678/file/download/:shortLink
   ```
 
-### Features and Future Improvements
+## Features and Future Improvements
 
 - [X] Upload
 - [X] Download
 - [ ] Grouped Upload (recursively uploading every file in group)
 - [ ] Grouped Download (recursively downloading every file in group)
 
-### Contributing
+## Contributing
 
 Contributions are welcome. Here are some ways you can contribute:
 
