@@ -1,0 +1,16 @@
+services:
+  document-processor:
+    build:
+      context: ../
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - SHORT_LEN=8
+      - SERVER_PORT=8081
+      - STORAGE_PATH=./uploads
+    volumes:
+      - storage:/server/uploads
+
+volumes:
+  storage:
