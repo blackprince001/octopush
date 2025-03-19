@@ -1,5 +1,5 @@
 services:
-  document-processor:
+  octopush:
     build:
       context: ../
       dockerfile: Dockerfile
