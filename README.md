@@ -1,8 +1,6 @@
 
 # Octopush - A Concurrent File Server
 
-<img src="./docs/generated.jpeg" style=" display: block; margin-left: auto; margin-right: auto; width: 50%; border-radius: 9px;"></img>
-
 ##
 
 Octopush is a Go-based file server designed to handle file uploads, downloads, and other related operations in a concurrent manner. The project utilizes the Gin framework for routing and GORM for database interactions.
