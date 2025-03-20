@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -23,6 +24,7 @@ import (
 var (
 	uploadDir    = config.ENV.StoragePath
 	shortLinkLen = config.ENV.StringLength
+	timeout      = config.ENV.DownloadTimeout
 )
 
 var db *gorm.DB = database.GetDatabaseConnection()
@@ -94,6 +96,13 @@ func cleanupUpload(shortLink, filename string) {
 	log.Printf("Cleanup completed for %s", shortLink)
 }
 
+func sanitizeFilename(filename string) (string, error) {
+	if strings.Contains(filename, "..") || strings.HasPrefix(filename, "/") {
+		return "", fmt.Errorf("invalid filename")
+	}
+	return filename, nil
+}
+
 func DownloadHandler(c *gin.Context) {
 	shortLink := c.Param("shortLink")
 
@@ -116,8 +125,14 @@ func DownloadHandler(c *gin.Context) {
 
 	go func() {
 		defer wg.Done()
-		filePath = filepath.Join(uploadDir, file.Filename)
-		_, err := os.Stat(filePath)
+		sanitizedFilename, err := sanitizeFilename(file.Filename)
+		if err != nil {
+			fileExists = false
+			return
+		}
+
+		filePath = filepath.Join(uploadDir, sanitizedFilename)
+		_, err = os.Stat(filePath)
 		fileExists = !os.IsNotExist(err)
 	}()
 
@@ -129,7 +144,7 @@ func DownloadHandler(c *gin.Context) {
 
 	select {
 	case <-done:
-	case <-time.After(2 * time.Second): // wait time for serving item
+	case <-time.After(timeout):
 		c.JSON(
 			http.StatusInternalServerError,
 			gin.H{"error": "Operation timed out"})
