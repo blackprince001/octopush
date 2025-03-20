@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
 	"sync"
 	"time"
 
@@ -159,4 +160,40 @@ func DownloadHandler(c *gin.Context) {
 		"Content-Disposition",
 		fmt.Sprintf("attachment; filename=%s", file.Filename))
 	c.File(filePath)
+}
+
+func GetSavedUploadsInformation(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
+
+	var files []models.File
+	var total int64
+
+	offset := (page - 1) * pageSize
+
+	if err := db.Model(&models.File{}).Count(&total).Error; err != nil {
+		c.JSON(
+			http.StatusNotFound,
+			gin.H{"error": "Error Processing Files"})
+		return
+	}
+
+	if err := db.Offset(offset).Limit(pageSize).Find(&files).Error; err != nil {
+		c.JSON(
+			http.StatusNotFound,
+			gin.H{"error": "No Files not found on server"})
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		gin.H{
+			"files": files,
+			"meta": gin.H{
+				"total":     total,
+				"page":      page,
+				"page_size": pageSize,
+			},
+		},
+	)
 }
