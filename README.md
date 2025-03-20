@@ -38,13 +38,19 @@ Octopush is a Go-based file server designed to handle file uploads, downloads, a
 - **Upload File**:
 
   ```bash
-  curl -X POST http://localhost:5678/file/upload -F 'file=@path/to/your/file'
+  curl -X POST http://localhost:5678/files/upload -F 'file=@path/to/your/file'
   ```
 
 - **Download File**:
 
   ```bash
-  curl http://localhost:5678/file/download/:shortLink
+  curl http://localhost:5678/files/download/:shortLink
+  ```
+
+- **Pull File Information**:
+
+  ```bash
+  curl http://localhost:5678/files
   ```
 
 ## Features and Future Improvements
