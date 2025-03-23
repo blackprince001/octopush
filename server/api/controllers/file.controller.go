@@ -11,11 +11,11 @@ import (
 	"sync"
 	"time"
 
-	"octopush/internal/config"
-	"octopush/internal/models"
+	"octopush/server/config"
+	"octopush/server/models"
 
-	"octopush/internal/database"
-	"octopush/internal/utils"
+	"octopush/server/database"
+	"octopush/server/utils"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"

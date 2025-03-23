@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"octopush/api/controllers"
+	"octopush/server/api/controllers"
 
 	"github.com/gin-gonic/gin"
 )

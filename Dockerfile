@@ -10,7 +10,7 @@ RUN go mod download
 
 COPY . .
 
-RUN cd cmd/ && go build -o octopush
+RUN cd server/cmd/ && go build -o octopush
 
 # deploy the application binary into a lean image
 FROM ubuntu:latest

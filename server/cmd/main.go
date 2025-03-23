@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"log"
 
-	"octopush/internal/config"
-	"octopush/internal/database"
+	"octopush/server/config"
+	"octopush/server/database"
 
-	"octopush/api/routes"
-	"octopush/internal/models"
+	"octopush/server/api/routes"
+	"octopush/server/models"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"

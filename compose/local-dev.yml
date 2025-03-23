@@ -1,7 +1,7 @@
 services:
   octopush:
     build:
-      context: ../
+      context: ../server
       dockerfile: Dockerfile
     ports:
       - "8081:8081"
@@ -18,7 +18,7 @@ services:
 
   octopush-web:
     build:
-      context: ../octopush-web
+      context: ../web
       dockerfile: Dockerfile
     ports:
       - "80:80"
