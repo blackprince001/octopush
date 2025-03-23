@@ -52,7 +52,7 @@ export default function FileDetails() {
       return <Image className="h-12 w-12" />
     }
 
-    if (["mp4", "webm", "mov", "avi"].includes(extension)) {
+    if (["mp4", "webm", "mov", "avi", "mkv"].includes(extension)) {
       return <Video className="h-12 w-12" />
     }
 
@@ -81,7 +81,7 @@ export default function FileDetails() {
   }
 
   return (
-    <div className="container max-w-4xl mx-auto">
+    <div className="container max-w-4xl mx-auto lg:space-y-24">
       <Button variant="ghost" className="mb-6" onClick={() => navigate(-1)}>
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back
@@ -115,12 +115,12 @@ export default function FileDetails() {
         </Card>
       ) : file ? (
         <Card>
-          <CardContent className="p-8">
+          <CardContent className="p-16 transition-colors hover:bg-muted/50">
             <div className="flex flex-col items-center gap-6">
               <div className="p-6 bg-muted rounded-xl">{getFileIcon()}</div>
 
               <div className="text-center">
-                <h1 className="text-2xl font-bold mb-2">{file.file_name}</h1>
+                <h1 className="text-md font-bold mb-2">{file.file_name}</h1>
                 <p className="text-muted-foreground">Short Link: {file.short_link}</p>
               </div>
 

@@ -2,15 +2,19 @@
 
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { Upload, FileQuestion } from "lucide-react"
+import { Upload, FileQuestion, Grid, List } from "lucide-react"
 import { Button } from "../components/ui/button"
 import { Card, CardContent } from "../components/ui/card"
 import { Skeleton } from "../components/ui/skeleton"
+import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group"
 import FileCard from "../components/FileCard"
+import FileListView from "../components/FileListView"
 import Pagination from "../components/Pagination"
 import { getFiles } from "../services/api"
 import type { FileType } from "../types"
 import toast from "react-hot-toast"
+
+type ViewMode = "grid" | "list"
 
 export default function FilesPage() {
   const [files, setFiles] = useState<FileType[]>([])
@@ -18,6 +22,7 @@ export default function FilesPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [error, setError] = useState<string | null>(null)
+  const [viewMode, setViewMode] = useState<ViewMode>("grid")
 
   useEffect(() => {
     const fetchFiles = async () => {
@@ -44,40 +49,76 @@ export default function FilesPage() {
     setCurrentPage(page)
   }
 
+  useEffect(() => {
+    const savedViewMode = localStorage.getItem("octopush-view-mode")
+    if (savedViewMode === "grid" || savedViewMode === "list") {
+      setViewMode(savedViewMode)
+    }
+  }, [])
+
+  const handleViewModeChange = (value: string) => {
+    if (value === "grid" || value === "list") {
+      setViewMode(value as ViewMode)
+      localStorage.setItem("octopush-view-mode", value)
+    }
+  }
+
   return (
-    <div className="container max-w-6xl mx-auto py-16">
+    <div className="container max-w-6xl mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Files</h1>
           <p className="text-muted-foreground mt-1">Manage and access your uploaded files</p>
         </div>
-        <Link to="/upload">
-          <Button>
-            <Upload className="h-4 w-4 mr-2" />
-            Upload File
-          </Button>
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-3 items-end sm:items-center">
+          <ToggleGroup type="single" value={viewMode} onValueChange={handleViewModeChange} className="justify-end">
+            <ToggleGroupItem value="grid" aria-label="Grid view">
+              <Grid className="h-4 w-4" />
+            </ToggleGroupItem>
+            <ToggleGroupItem value="list" aria-label="List view">
+              <List className="h-4 w-4" />
+            </ToggleGroupItem>
+          </ToggleGroup>
+
+          <Link to="/upload">
+            <Button>
+              <Upload className="h-4 w-4 mr-2" />
+              Upload File
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {Array.from({ length: 6 }).map((_, i) => (
-            <Card key={i}>
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <Skeleton className="h-14 w-14 rounded-lg" />
-                  <div className="space-y-2 flex-1">
-                    <Skeleton className="h-5 w-3/4" />
-                    <Skeleton className="h-4 w-1/2" />
+        viewMode === "grid" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <Skeleton className="h-14 w-14 rounded-lg" />
+                    <div className="space-y-2 flex-1">
+                      <Skeleton className="h-5 w-3/4" />
+                      <Skeleton className="h-4 w-1/2" />
+                    </div>
                   </div>
+                </CardContent>
+                <div className="p-4 bg-muted/50">
+                  <Skeleton className="h-9 w-full" />
                 </div>
-              </CardContent>
-              <div className="p-4 bg-muted/50">
-                <Skeleton className="h-9 w-full" />
-              </div>
-            </Card>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-md border">
+            <div className="p-4">
+              <Skeleton className="h-8 w-full mb-4" />
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full mb-2" />
+              ))}
+            </div>
+          </div>
+        )
       ) : error ? (
         <Card>
           <CardContent className="p-6 flex flex-col items-center justify-center text-center">
@@ -105,11 +146,15 @@ export default function FilesPage() {
         </Card>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {files.map((file) => (
-              <FileCard key={file.short_link} file={file} />
-            ))}
-          </div>
+          {viewMode === "grid" ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {files.map((file) => (
+                <FileCard key={file.short_link} file={file} />
+              ))}
+            </div>
+          ) : (
+            <FileListView files={files} />
+          )}
 
           {totalPages > 1 && (
             <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />

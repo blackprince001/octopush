@@ -20,7 +20,7 @@ export default function FileCard({ file }: FileCardProps) {
       return <Image className="h-10 w-10" />
     }
 
-    if (["mp4", "webm", "mov", "avi"].includes(extension)) {
+    if (["mp4", "webm", "mov", "avi", "mkv"].includes(extension)) {
       return <Video className="h-10 w-10" />
     }
 
@@ -36,7 +36,7 @@ export default function FileCard({ file }: FileCardProps) {
   }
 
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md">
+    <Card className="overflow-hidden transition-colors hover:bg-muted/50">
       <CardContent className="p-6">
         <div className="flex items-start gap-4">
           <div className="rounded-lg bg-muted p-2 flex items-center justify-center">{getFileIcon()}</div>
