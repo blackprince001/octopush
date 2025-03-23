@@ -9,8 +9,30 @@ services:
       - SHORT_LEN=8
       - SERVER_PORT=8081
       - STORAGE_PATH=./uploads
+      - DOWNLOAD_TIMEOUT=5
     volumes:
       - storage:/server/uploads
+      - db:/server/db
+    networks:
+      - octopush-network
+
+  octopush-web:
+    build:
+      context: ../octopush-web
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    environment:
+      - VITE_FILE_SERVER_API=http://octopush:8081
+    depends_on:
+      - octopush
+    networks:
+      - octopush-network
+
+networks:
+  octopush-network:
+    driver: bridge
 
 volumes:
   storage:
+  db:

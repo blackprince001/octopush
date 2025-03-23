@@ -5,8 +5,6 @@ import (
 	"os"
 	"strconv"
 	"time"
-
-	"github.com/joho/godotenv"
 )
 
 type Config struct {
@@ -19,10 +17,6 @@ type Config struct {
 var ENV = initConfig()
 
 func initConfig() Config {
-	if err := godotenv.Load(); err != nil {
-		log.Fatal("Failed to load env variables")
-	}
-
 	stringLenVal, err := strconv.Atoi(getEnv("SHORT_LEN", "6"))
 	if err != nil {
 		log.Fatal("Error occurred when parsing string_length value")
