@@ -1,7 +1,7 @@
 services:
   octopush:
     build:
-      context: ../server
+      context: ../
       dockerfile: Dockerfile
     ports:
       - "8081:8081"

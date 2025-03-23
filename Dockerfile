@@ -17,6 +17,6 @@ FROM ubuntu:latest
 
 WORKDIR /server
 
-COPY --from=build-stage /app/cmd/octopush /server/
+COPY --from=build-stage /app/server/cmd/octopush /server/
 
 CMD ["/server/octopush"]

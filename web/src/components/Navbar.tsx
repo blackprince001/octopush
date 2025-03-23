@@ -38,7 +38,7 @@ export default function Navbar() {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button className="md:hidden" variant="ghost" size="icon">
                 {theme === "light" ? (
                   <Sun className="h-5 w-5" />
                 ) : theme === "dark" ? (
