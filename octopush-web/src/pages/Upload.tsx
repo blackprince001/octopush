@@ -26,7 +26,7 @@ export default function Upload() {
         Back
       </Button>
 
-      <div className="text-center mb-8">
+      <div className="text-center mb-8 pt-12">
         <h1 className="text-3xl font-bold tracking-tight">Upload File</h1>
         <p className="text-muted-foreground mt-2">Upload your file to share it with others</p>
       </div>

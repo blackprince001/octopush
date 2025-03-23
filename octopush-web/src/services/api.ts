@@ -2,7 +2,7 @@ import { API_BASE_URL } from "../utils/config"
 import type { FileType, PaginatedResponse } from "../types"
 
 
-export async function getFiles(page = 1, pageSize = 10): Promise<PaginatedResponse> {
+export async function getFiles(page = 1, pageSize = 9): Promise<PaginatedResponse> {
   try {
     const response = await fetch(`${API_BASE_URL}/files?page=${page}&page_size=${pageSize}`)
 

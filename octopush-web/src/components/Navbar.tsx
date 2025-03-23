@@ -1,7 +1,7 @@
 "use client"
 
 import { Link, useLocation } from "react-router-dom"
-import { Upload, Moon, Sun, Laptop, FileText } from "lucide-react"
+import { Upload, Moon, Sun, Laptop } from "lucide-react"
 import { Button } from "./ui/button"
 import { useTheme } from "./ThemeProvider"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu"
@@ -13,18 +13,9 @@ export default function Navbar() {
   const isActive = (path: string) => location.pathname === path
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-30 bg-background border-b h-16 flex items-center px-4 md:px-6">
-      <div className="container mx-auto flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="bg-primary text-primary-foreground p-1 rounded">
-              <FileText className="h-5 w-5" />
-            </div>
-            <span className="font-bold text-xl">Octopush</span>
-          </Link>
-        </div>
-
-        <nav className="hidden md:flex items-center gap-1">
+    <header className="fixed bottom-0 left-0 right-0 z-30 bg-background border-b h-16 flex items-center px-4 md:px-6">
+      <div className="container mx-auto flex items-center gap-8 justify-center">
+        <nav className="hidden md:flex items-center gap-4">
           <Link to="/">
             <Button variant={isActive("/") ? "secondary" : "ghost"} className="font-medium">
               Files
