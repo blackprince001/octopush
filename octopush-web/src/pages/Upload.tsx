@@ -16,7 +16,7 @@ export default function Upload() {
     // Navigate to the file details page after a short delay
     setTimeout(() => {
       navigate(`/files/${shortLink}`)
-    }, 1500)
+    }, 500)
   }
 
   return (
@@ -34,7 +34,7 @@ export default function Upload() {
       <FileUploader onUploadSuccess={handleUploadSuccess} />
 
       <div className="mt-8 text-center text-sm text-muted-foreground">
-        <p>Maximum file size: 100MB</p>
+        <p>Maximum file size: Depends how you have on local disks</p>
         <p className="mt-1">Supported file types: All file types are supported</p>
       </div>
     </div>

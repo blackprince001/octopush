@@ -10,5 +10,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    'process.env.VITE_FILE_SERVER_API': JSON.stringify(process.env.VITE_FILE_SERVER_API),
+  },
 })
-

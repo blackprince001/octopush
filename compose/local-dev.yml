@@ -4,10 +4,10 @@ services:
       context: ../
       dockerfile: Dockerfile
     ports:
-      - "8081:8081"
+      - "8081:80"
     environment:
       - SHORT_LEN=8
-      - SERVER_PORT=8081
+      - SERVER_PORT=80
       - STORAGE_PATH=./uploads
       - DOWNLOAD_TIMEOUT=5
     volumes:
@@ -23,7 +23,7 @@ services:
     ports:
       - "80:80"
     environment:
-      - VITE_FILE_SERVER_API=http://octopush:8081
+      - VITE_FILE_SERVER_API=http://octopush
     depends_on:
       - octopush
     networks:
