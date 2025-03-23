@@ -2,8 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 
 @layer utilities {
@@ -15,72 +16,137 @@ body {
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    /* White */
+    --foreground: 120 12% 15%;
+    /* Darkened Sage Green for text */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    /* White */
+    --card-foreground: 120 12% 15%;
+    /* Darkened Sage Green for text */
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+    /* White */
+    --popover-foreground: 120 12% 15%;
+    /* Darkened Sage Green for text */
+    --primary: 120 12% 15%;
+    /* Darkened Sage Green for primary elements */
+    --primary-foreground: 0 0% 100%;
+    /* White */
+    --secondary: 120 12% 85%;
+    /* Light Sage Green for secondary elements */
+    --secondary-foreground: 120 12% 15%;
+    /* Darkened Sage Green for text */
+    --muted: 120 12% 85%;
+    /* Light Sage Green for muted elements */
+    --muted-foreground: 120 12% 40%;
+    /* Medium Sage Green for muted text */
+    --accent: 120 12% 85%;
+    /* Light Sage Green for accents */
+    --accent-foreground: 120 12% 15%;
+    /* Darkened Sage Green for text */
+    --destructive: 0 84% 60%;
+    /* Red for destructive actions */
+    --destructive-foreground: 0 0% 100%;
+    /* White */
+    --border: 120 12% 85%;
+    /* Light Sage Green for borders */
+    --input: 120 12% 85%;
+    /* Light Sage Green for inputs */
+    --ring: 120 12% 15%;
+    /* Darkened Sage Green for focus rings */
     --chart-1: 12 76% 61%;
+    /* Chart color 1 */
     --chart-2: 173 58% 39%;
+    /* Chart color 2 */
     --chart-3: 197 37% 24%;
+    /* Chart color 3 */
     --chart-4: 43 74% 66%;
+    /* Chart color 4 */
     --chart-5: 27 87% 67%;
+    /* Chart color 5 */
     --radius: 0.5rem;
     --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    /* Light Gray for sidebar */
+    --sidebar-foreground: 120 12% 15%;
+    /* Darkened Sage Green for text */
+    --sidebar-primary: 120 12% 15%;
+    /* Darkened Sage Green for primary elements */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* White */
+    --sidebar-accent: 120 12% 85%;
+    /* Light Sage Green for accents */
+    --sidebar-accent-foreground: 120 12% 15%;
+    /* Darkened Sage Green for text */
+    --sidebar-border: 120 12% 85%;
+    /* Light Sage Green for borders */
+    --sidebar-ring: 120 12% 15%;
+    /* Darkened Sage Green for focus rings */
+  }
+
+  .dark {
+    --background: 120 12% 10%;
+    /* Dark Sage Green for dark mode background */
+    --foreground: 120 12% 85%;
+    /* Light Sage Green for text */
+    --card: 120 12% 10%;
+    /* Dark Sage Green for cards */
+    --card-foreground: 120 12% 85%;
+    /* Light Sage Green for text */
+    --popover: 120 12% 10%;
+    /* Dark Sage Green for popovers */
+    --popover-foreground: 120 12% 85%;
+    /* Light Sage Green for text */
+    --primary: 120 12% 85%;
+    /* Light Sage Green for primary elements */
+    --primary-foreground: 120 12% 10%;
+    /* Dark Sage Green for text */
+    --secondary: 120 12% 20%;
+    /* Medium Sage Green for secondary elements */
+    --secondary-foreground: 120 12% 85%;
+    /* Light Sage Green for text */
+    --muted: 120 12% 20%;
+    /* Medium Sage Green for muted elements */
+    --muted-foreground: 120 12% 60%;
+    /* Light Sage Green for muted text */
+    --accent: 120 12% 20%;
+    /* Medium Sage Green for accents */
+    --accent-foreground: 120 12% 85%;
+    /* Light Sage Green for text */
+    --destructive: 0 62% 30%;
+    /* Dark Red for destructive actions */
+    --destructive-foreground: 0 0% 100%;
+    /* White */
+    --border: 120 12% 20%;
+    /* Medium Sage Green for borders */
+    --input: 120 12% 20%;
+    /* Medium Sage Green for inputs */
+    --ring: 120 12% 85%;
+    /* Light Sage Green for focus rings */
+    --chart-1: 220 70% 50%;
+    /* Chart color 1 */
+    --chart-2: 160 60% 45%;
+    /* Chart color 2 */
+    --chart-3: 30 80% 55%;
+    /* Chart color 3 */
+    --chart-4: 280 65% 60%;
+    /* Chart color 4 */
+    --chart-5: 340 75% 55%;
+    /* Chart color 5 */
+    --sidebar-background: 120 12% 15%;
+    /* Darkened Sage Green for sidebar */
+    --sidebar-foreground: 120 12% 85%;
+    /* Light Sage Green for text */
+    --sidebar-primary: 120 12% 85%;
+    /* Light Sage Green for primary elements */
+    --sidebar-primary-foreground: 120 12% 15%;
+    /* Darkened Sage Green for text */
+    --sidebar-accent: 120 12% 20%;
+    /* Medium Sage Green for accents */
+    --sidebar-accent-foreground: 120 12% 85%;
+    /* Light Sage Green for text */
+    --sidebar-border: 120 12% 20%;
+    /* Medium Sage Green for borders */
+    --sidebar-ring: 120 12% 85%;
+    /* Light Sage Green for focus rings */
   }
 }
 
@@ -88,7 +154,21 @@ body {
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Inter', sans-serif;
+  }
+
+  button {
+    font-family: 'Inter', sans-serif;
   }
 }

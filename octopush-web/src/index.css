@@ -5,47 +5,85 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* White */
+    --foreground: 120 12% 15%;
+    /* Darkened Sage Green for text */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* White */
+    --card-foreground: 120 12% 15%;
+    /* Darkened Sage Green for text */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    /* White */
+    --popover-foreground: 120 12% 15%;
+    /* Darkened Sage Green for text */
+    --primary: 120 12% 15%;
+    /* Darkened Sage Green for primary elements */
+    --primary-foreground: 0 0% 100%;
+    /* White */
+    --secondary: 120 12% 85%;
+    /* Light Sage Green for secondary elements */
+    --secondary-foreground: 120 12% 15%;
+    /* Darkened Sage Green for text */
+    --muted: 120 12% 85%;
+    /* Light Sage Green for muted elements */
+    --muted-foreground: 120 12% 40%;
+    /* Medium Sage Green for muted text */
+    --accent: 120 12% 85%;
+    /* Light Sage Green for accents */
+    --accent-foreground: 120 12% 15%;
+    /* Darkened Sage Green for text */
+    --destructive: 0 84% 60%;
+    /* Red for destructive actions */
+    --destructive-foreground: 0 0% 100%;
+    /* White */
+    --border: 120 12% 85%;
+    /* Light Sage Green for borders */
+    --input: 120 12% 85%;
+    /* Light Sage Green for inputs */
+    --ring: 120 12% 15%;
+    /* Darkened Sage Green for focus rings */
     --radius: 0.5rem;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --background: 120 12% 10%;
+    /* Dark Sage Green for dark mode background */
+    --foreground: 120 12% 85%;
+    /* Light Sage Green for text */
+    --card: 120 12% 10%;
+    /* Dark Sage Green for cards */
+    --card-foreground: 120 12% 85%;
+    /* Light Sage Green for text */
+    --popover: 120 12% 10%;
+    /* Dark Sage Green for popovers */
+    --popover-foreground: 120 12% 85%;
+    /* Light Sage Green for text */
+    --primary: 120 12% 85%;
+    /* Light Sage Green for primary elements */
+    --primary-foreground: 120 12% 10%;
+    /* Dark Sage Green for text */
+    --secondary: 120 12% 20%;
+    /* Medium Sage Green for secondary elements */
+    --secondary-foreground: 120 12% 85%;
+    /* Light Sage Green for text */
+    --muted: 120 12% 20%;
+    /* Medium Sage Green for muted elements */
+    --muted-foreground: 120 12% 60%;
+    /* Light Sage Green for muted text */
+    --accent: 120 12% 20%;
+    /* Medium Sage Green for accents */
+    --accent-foreground: 120 12% 85%;
+    /* Light Sage Green for text */
+    --destructive: 0 62% 30%;
+    /* Dark Red for destructive actions */
+    --destructive-foreground: 0 0% 100%;
+    /* White */
+    --border: 120 12% 20%;
+    /* Medium Sage Green for borders */
+    --input: 120 12% 20%;
+    /* Medium Sage Green for inputs */
+    --ring: 120 12% 85%;
+    /* Light Sage Green for focus rings */
   }
 }
 
@@ -53,6 +91,7 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground;
     font-feature-settings: "rlig" 1, "calt" 1;
@@ -70,4 +109,3 @@
 .progress-bar {
   @apply h-2 rounded-full bg-primary transition-all duration-300 ease-in-out;
 }
-

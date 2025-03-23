@@ -10,7 +10,7 @@ import { ThemeProvider } from "./components/ThemeProvider"
 function App() {
   return (
     <ThemeProvider defaultTheme="system" storageKey="octopush-theme">
-      <Toaster position="top-right" />
+      <Toaster position="bottom-right" />
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<FilesPage />} />
