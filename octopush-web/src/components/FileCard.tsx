@@ -4,6 +4,7 @@ import { Download, File, FileText, Image, Music, Video } from "lucide-react"
 import { Button } from "./ui/button"
 import { formatDistanceToNow } from "date-fns"
 import type { FileType } from "../types"
+import { API_BASE_URL } from "../utils/config"
 
 interface FileCardProps {
   file: FileType
@@ -56,7 +57,7 @@ export default function FileCard({ file }: FileCardProps) {
           </Button>
         </Link>
         <a
-          href={`http://localhost:5678/files/download/${file.short_link}`}
+          href={`${API_BASE_URL}/files/download/${file.short_link}`}
           download
           target="_blank"
           rel="noopener noreferrer"

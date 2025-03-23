@@ -19,14 +19,14 @@ export async function getFiles(page = 1, pageSize = 10): Promise<PaginatedRespon
 
 export async function getFileByShortLink(shortLink: string): Promise<FileType> {
   try {
-    const response = await fetch(`${API_BASE_URL}/files/`)
+    const response = await fetch(`${API_BASE_URL}/files/item/${shortLink}`)
 
     if (!response.ok) {
       throw new Error(`Error fetching file: ${response.status}`)
     }
 
     const data = await response.json()
-    const file = data.files.find((f: FileType) => f.short_link === shortLink)
+    const file = data.file
 
     if (!file) {
       throw new Error("File not found")
