@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # Build the application from source
-FROM golang:1.22 AS build-stage
+FROM golang:1.23.0 AS build-stage
 
 WORKDIR /app
 
@@ -18,7 +18,5 @@ FROM ubuntu:latest
 WORKDIR /server
 
 COPY --from=build-stage /app/cmd/octopush /server/
-
-EXPOSE 5678
 
 CMD ["/server/octopush"]
