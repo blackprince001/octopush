@@ -12,4 +12,5 @@ func RegisterFileRoutes(r *gin.RouterGroup) {
 	fileRoutes.POST("/upload", controllers.UploadHandler)
 	fileRoutes.GET("/download/:shortLink", controllers.DownloadHandler)
 	fileRoutes.GET("/", controllers.GetSavedUploadsInformation)
+	fileRoutes.GET("/item/:shortLink", controllers.GetSingleFileInformation)
 }

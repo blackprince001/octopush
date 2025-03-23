@@ -193,7 +193,7 @@ func GetSavedUploadsInformation(c *gin.Context) {
 		return
 	}
 
-	if err := db.Offset(offset).Limit(pageSize).Find(&files).Error; err != nil {
+	if err := db.Offset(offset).Limit(pageSize).Order("time_updated DESC").Find(&files).Error; err != nil {
 		c.JSON(
 			http.StatusNotFound,
 			gin.H{"error": "No Files not found on server"})
@@ -209,6 +209,82 @@ func GetSavedUploadsInformation(c *gin.Context) {
 				"page":      page,
 				"page_size": pageSize,
 			},
+		},
+	)
+}
+
+func GetSingleFileInformation(c *gin.Context) {
+	shortLink := c.Param("shortLink")
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	var file models.File
+	var dbErr error
+	var fileExists bool
+	var filePath string
+
+	go func() {
+		defer wg.Done()
+		if err := db.Where(
+			"short_link = ?", shortLink).First(
+			&file).Error; err != nil {
+			dbErr = err
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		sanitizedFilename, err := sanitizeFilename(file.Filename)
+		if err != nil {
+			fileExists = false
+			return
+		}
+
+		filePath = filepath.Join(uploadDir, sanitizedFilename)
+		_, err = os.Stat(filePath)
+		fileExists = !os.IsNotExist(err)
+	}()
+
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+	case <-time.After(timeout):
+		c.JSON(
+			http.StatusInternalServerError,
+			gin.H{"error": "Operation timed out"})
+		return
+	}
+
+	if dbErr != nil {
+		if dbErr == gorm.ErrRecordNotFound {
+			c.JSON(
+				http.StatusNotFound,
+				gin.H{"error": "File record not found in database"})
+		} else {
+			c.JSON(
+				http.StatusInternalServerError,
+				gin.H{"error": "Database error: " + dbErr.Error()})
+		}
+		return
+	}
+
+	if !fileExists {
+		c.JSON(
+			http.StatusNotFound,
+			gin.H{"error": "File not found on server"})
+		return
+	}
+
+	c.JSON(
+		http.StatusOK,
+		gin.H{
+			"file": file,
 		},
 	)
 }
