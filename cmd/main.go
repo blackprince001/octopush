@@ -3,12 +3,14 @@ package main
 import (
 	"fmt"
 	"log"
+
 	"octopush/internal/config"
 	"octopush/internal/database"
 
 	"octopush/api/routes"
 	"octopush/internal/models"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
@@ -22,6 +24,7 @@ func main() {
 	}
 
 	r := gin.Default()
+	r.Use(cors.Default())
 
 	v1 := r.Group("")
 	{
