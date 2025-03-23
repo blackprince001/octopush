@@ -19,7 +19,7 @@ Octopush is a Go-based file server designed to handle file uploads, downloads, a
    cd octopush
    ```
 
-3. **Build and Run the Application**:
+3. **Build and Run only the server**:
 
    ```bash
    go build -o octopush cmd/main.go
@@ -31,6 +31,16 @@ Octopush is a Go-based file server designed to handle file uploads, downloads, a
    ```bash
    docker build -t octopush .
    docker run -p 5678:5678 octopush
+   ```
+
+### Running Entire Application
+
+1. **Clone the Repository**:
+
+  We run the compose file and build all containers
+
+   ```bash
+   docker compose -f compose/local-dev.yml up --remove-orphans
    ```
 
 ### API Endpoints
@@ -57,6 +67,7 @@ Octopush is a Go-based file server designed to handle file uploads, downloads, a
 
 - [X] Upload
 - [X] Download
+- [ ] Delete Objects from storage
 - [ ] Grouped Upload (recursively uploading every file in group)
 - [ ] Grouped Download (recursively downloading every file in group)
 
