@@ -3,22 +3,50 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { formatDistanceToNow, format } from "date-fns"
-import { Download, File, FileText, Image, Music, Video, ChevronUp, ChevronDown } from "lucide-react"
+import { Download, File, FileText, Image, Music, Video, ChevronUp, ChevronDown, Trash } from "lucide-react"
 import { Button } from "./ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "./ui/table"
 import type { FileType } from "../types"
 import { API_BASE_URL } from "../utils/config"
+import toast from "react-hot-toast"
+
 
 interface FileListViewProps {
   files: FileType[]
+  onDelete?: (deletedShortLink: string) => void
 }
 
 type SortField = "file_name" | "time_updated"
 type SortDirection = "asc" | "desc"
 
-export default function FileListView({ files }: FileListViewProps) {
+export default function FileListView({ files, onDelete }: FileListViewProps) {
   const [sortField, setSortField] = useState<SortField>("time_updated")
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
+  const [deletingLinks, setDeletingLinks] = useState<string[]>([])
+
+  const handleDelete = async (shortLink: string) => {
+    if (!window.confirm("Are you sure you want to delete this file?")) return
+
+    setDeletingLinks(prev => [...prev, shortLink])
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/files/item/${shortLink}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      onDelete?.(shortLink)
+      toast.success("File deleted")
+    } catch (error) {
+      console.error("Delete error:", error)
+      toast.error("Failed to delete file")
+    } finally {
+      setDeletingLinks(prev => prev.filter(link => link !== shortLink))
+    }
+  }
 
   const getFileIcon = (fileName: string) => {
     const extension = fileName.split(".").pop()?.toLowerCase()
@@ -109,17 +137,28 @@ export default function FileListView({ files }: FileListViewProps) {
                 <div className="text-xs text-muted-foreground">{format(new Date(file.time_updated), "p")}</div>
               </TableCell>
               <TableCell className="text-right">
-                <a
-                  href={`${API_BASE_URL}/files/download/${file.short_link}`}
-                  download
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <Button variant="outline" size="sm">
-                    <Download className="h-3 w-3 mr-1" />
-                    Download
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDelete(file.short_link)}
+                    disabled={deletingLinks.includes(file.short_link)}
+                  >
+                    <Trash className="h-3 w-3 mr-1" />
+                    {deletingLinks.includes(file.short_link) ? "Deleting..." : "Delete"}
                   </Button>
-                </a>
+                  <a
+                    href={`${API_BASE_URL}/files/download/${file.short_link}`}
+                    download
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <Button variant="outline" size="sm">
+                      <Download className="h-3 w-3 mr-1" />
+                      Download
+                    </Button>
+                  </a>
+                </div>
               </TableCell>
             </TableRow>
           ))}

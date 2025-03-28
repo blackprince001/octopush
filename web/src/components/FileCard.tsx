@@ -1,16 +1,47 @@
 import { Link } from "react-router-dom"
 import { Card, CardContent, CardFooter } from "./ui/card"
-import { Download, File, FileText, Image, Music, Video } from "lucide-react"
+import { Download, File, FileText, Image, Music, Video, Trash } from "lucide-react"
 import { Button } from "./ui/button"
 import { formatDistanceToNow } from "date-fns"
 import type { FileType } from "../types"
 import { API_BASE_URL } from "../utils/config"
+import { useState } from "react"
+import toast from "react-hot-toast"
+
 
 interface FileCardProps {
   file: FileType
+  onDelete?: (deletedShortLink: string) => void
 }
 
-export default function FileCard({ file }: FileCardProps) {
+export default function FileCard({ file, onDelete }: FileCardProps) {
+  const [deletingLinks, setDeletingLinks] = useState<string[]>([])
+
+
+  const handleDelete = async (shortLink: string) => {
+    if (!window.confirm("Are you sure you want to delete this file?")) return
+
+    setDeletingLinks(prev => [...prev, shortLink])
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/files/item/${shortLink}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      onDelete?.(shortLink)
+      toast.success("File deleted")
+    } catch (error) {
+      console.error("Delete error:", error)
+      toast.error("Failed to delete file")
+    } finally {
+      setDeletingLinks(prev => prev.filter(link => link !== shortLink))
+    }
+  }
+
   const getFileIcon = () => {
     const extension = file.file_name.split(".").pop()?.toLowerCase()
 
@@ -56,6 +87,19 @@ export default function FileCard({ file }: FileCardProps) {
             View details
           </Button>
         </Link>
+
+        <div className="flex gap-2">
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={() => handleDelete(file.short_link)}
+            disabled={deletingLinks.includes(file.short_link)}
+          >
+            <Trash className="h-4 w-4 mr-2" />
+            {deletingLinks.includes(file.short_link) ? "Deleting..." : "Delete"}
+          </Button>
+        </div>
+
         <a
           href={`${API_BASE_URL}/files/download/${file.short_link}`}
           download
