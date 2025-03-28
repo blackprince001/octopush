@@ -23,6 +23,9 @@ func main() {
 		log.Fatal(err)
 	}
 
+	db.Migrator().CreateIndex(&models.File{}, "ShortLink")
+	db.Migrator().CreateIndex(&models.File{}, "Filename")
+
 	r := gin.Default()
 	r.Use(cors.Default())
 
