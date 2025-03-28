@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -39,36 +40,52 @@ func UploadHandler(c *gin.Context) {
 	shortLink := utils.GenerateShortLink(shortLinkLen)
 	filename := filepath.Join(uploadDir, file.Filename)
 
-	resultChan := make(chan error, 1)
+	newFile := &models.File{
+		ShortLink:   shortLink,
+		Filename:    file.Filename,
+		TimeUpdated: time.Now(),
+	}
 
-	go func() {
-		err := c.SaveUploadedFile(file, filename)
-		if err != nil {
-			resultChan <- err
+	err = db.Create(newFile).Error
+	if err != nil {
+		cleanupUpload(shortLink, file.Filename)
+
+		if isDuplicateKeyError(err) {
+			c.JSON(http.StatusConflict, gin.H{
+				"error": "File with this name already exists",
+			})
 			return
 		}
-		resultChan <- nil
-	}()
 
-	go func() {
-		err := db.Create(&models.File{
-			ShortLink:   shortLink,
-			Filename:    file.Filename,
-			TimeUpdated: time.Now(),
-		}).Error
-		if err != nil {
-			resultChan <- err
-		}
-	}()
-
-	result := <-resultChan
-	if result != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": result.Error()})
-		cleanupUpload(shortLink, file.Filename)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Database error: " + err.Error(),
+		})
 		return
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{"message": "File upload in progress", "url": shortLink})
+	if err := c.SaveUploadedFile(file, filename); err != nil {
+		c.JSON(http.StatusInternalServerError,
+			gin.H{
+				"error": "Failed to save file: " + err.Error(),
+			},
+		)
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "File uploaded successfully",
+		"url":     shortLink,
+	})
+}
+
+func isDuplicateKeyError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	return strings.Contains(err.Error(), "unique constraint") ||
+		strings.Contains(err.Error(), "Duplicate entry") ||
+		strings.Contains(err.Error(), "UNIQUE constraint failed")
 }
 
 func cleanupUpload(shortLink, filename string) {
@@ -287,4 +304,53 @@ func GetSingleFileInformation(c *gin.Context) {
 			"file": file,
 		},
 	)
+}
+
+func DeleteFile(c *gin.Context) {
+	shortLink := c.Param("shortLink")
+
+	var file models.File
+	if err := db.Where("short_link = ?", shortLink).First(&file).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": "File not found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error: " + err.Error()})
+		return
+	}
+
+	sanitizedFilename, err := sanitizeFilename(file.Filename)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid filename"})
+		return
+	}
+
+	var deleteErrors []string
+	filePath := filepath.Join(uploadDir, sanitizedFilename)
+
+	if err := os.Remove(filePath); err != nil {
+		if !os.IsNotExist(err) {
+			deleteErrors = append(deleteErrors, "File deletion error: "+err.Error())
+		}
+	}
+
+	if err := db.Delete(&file).Error; err != nil {
+		deleteErrors = append(deleteErrors, "Database deletion error: "+err.Error())
+	}
+
+	if len(deleteErrors) > 0 {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Partial deletion occurred",
+			"details": deleteErrors,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": "File and record deleted successfully",
+		"deleted": gin.H{
+			"short_link": shortLink,
+			"filename":   file.Filename,
+		},
+	})
 }
