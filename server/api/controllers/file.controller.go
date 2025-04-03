@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"archive/zip"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -25,7 +27,6 @@ import (
 var (
 	uploadDir    = config.ENV.StoragePath
 	shortLinkLen = config.ENV.StringLength
-	timeout      = config.ENV.DownloadTimeout
 )
 
 var db *gorm.DB = database.GetDatabaseConnection()
@@ -50,7 +51,7 @@ func UploadHandler(c *gin.Context) {
 	if err != nil {
 		cleanupUpload(shortLink, file.Filename)
 
-		if isDuplicateKeyError(err) {
+		if utils.IsDuplicateKeyError(err) {
 			c.JSON(http.StatusConflict, gin.H{
 				"error": "File with this name already exists",
 			})
@@ -78,95 +79,86 @@ func UploadHandler(c *gin.Context) {
 	})
 }
 
-func isDuplicateKeyError(err error) bool {
-	if err == nil {
-		return false
+func UploadFolderHandler(c *gin.Context) {
+	groupName := c.Param("groupName")
+	form, err := c.MultipartForm()
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
-	return strings.Contains(err.Error(), "unique constraint") ||
-		strings.Contains(err.Error(), "Duplicate entry") ||
-		strings.Contains(err.Error(), "UNIQUE constraint failed")
-}
+	files := form.File["files"]
+	errs := make([]string, len(files))
 
-func cleanupUpload(shortLink, filename string) {
-	var wg sync.WaitGroup
-	wg.Add(2)
+	for _, file := range files {
+		shortLink := utils.GenerateShortLink(shortLinkLen)
+		filename := filepath.Join(uploadDir, file.Filename)
 
-	go func() {
-		defer wg.Done()
-		filePath := filepath.Join(uploadDir, filename)
-		if err := os.Remove(filePath); err != nil {
-			log.Printf("Error deleting file %s: %v", filePath, err)
+		newFile := &models.File{
+			ShortLink:   shortLink,
+			Filename:    file.Filename,
+			GroupName:   groupName,
+			TimeUpdated: time.Now(),
 		}
-	}()
 
-	go func() {
-		defer wg.Done()
-		if err := db.Where(
-			"short_link = ?", shortLink).Delete(
-			&models.File{}).Error; err != nil {
-			log.Printf("Error deleting database record for %s: %v", shortLink, err)
+		err = db.Create(newFile).Error
+		if err != nil {
+			cleanupUpload(shortLink, file.Filename)
+
+			if utils.IsDuplicateKeyError(err) {
+				errs = append(errs, fmt.Sprintf("File already exist in the stored location: %s", file.Filename))
+				continue
+			}
+
+			errs = append(errs, fmt.Sprintf("Database could not create file %s with error %s", file.Filename, err.Error()))
+			continue
 		}
-	}()
 
-	wg.Wait()
-	log.Printf("Cleanup completed for %s", shortLink)
-}
-
-func sanitizeFilename(filename string) (string, error) {
-	if strings.Contains(filename, "..") || strings.HasPrefix(filename, "/") {
-		return "", fmt.Errorf("invalid filename")
+		if err := c.SaveUploadedFile(file, filename); err != nil {
+			errs = append(errs, fmt.Sprintf("Could not save file on server %s with error %s", file.Filename, err.Error()))
+			continue
+		}
 	}
-	return filename, nil
+
+	if len(errs) == 0 {
+		c.JSON(http.StatusCreated, gin.H{
+			"message":              "Files uploaded successfully",
+			"files_uploaded_count": len(files),
+			"group_name":           groupName,
+		})
+	} else {
+
+		log.Printf("Error uploading some files. All errors related %v", errs)
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "Failed to upload Files. These were the errors present.",
+			"errors":  errs,
+		})
+	}
 }
 
 func DownloadHandler(c *gin.Context) {
 	shortLink := c.Param("shortLink")
-
-	var wg sync.WaitGroup
-	wg.Add(2)
 
 	var file models.File
 	var dbErr error
 	var fileExists bool
 	var filePath string
 
-	go func() {
-		defer wg.Done()
-		if err := db.Where(
-			"short_link = ?", shortLink).First(
-			&file).Error; err != nil {
-			dbErr = err
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-		sanitizedFilename, err := sanitizeFilename(file.Filename)
-		if err != nil {
-			fileExists = false
-			return
-		}
-
-		filePath = filepath.Join(uploadDir, sanitizedFilename)
-		_, err = os.Stat(filePath)
-		fileExists = !os.IsNotExist(err)
-	}()
-
-	done := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(done)
-	}()
-
-	select {
-	case <-done:
-	case <-time.After(timeout):
-		c.JSON(
-			http.StatusInternalServerError,
-			gin.H{"error": "Operation timed out"})
-		return
+	if err := db.Where(
+		"short_link = ?", shortLink).First(
+		&file).Error; err != nil {
+		dbErr = err
 	}
+
+	sanitizedFilename, err := utils.SanitizeFilename(file.Filename)
+	if err != nil {
+		fileExists = false
+	}
+
+	filePath = filepath.Join(uploadDir, sanitizedFilename)
+	_, err = os.Stat(filePath)
+	fileExists = !os.IsNotExist(err)
 
 	if dbErr != nil {
 		if dbErr == gorm.ErrRecordNotFound {
@@ -192,6 +184,70 @@ func DownloadHandler(c *gin.Context) {
 		"Content-Disposition",
 		fmt.Sprintf("attachment; filename=%s", file.Filename))
 	c.File(filePath)
+}
+
+func DownloadGroupHandler(c *gin.Context) {
+	groupName := c.Param("groupName")
+
+	var files []models.File
+	if err := db.Where("group_name = ?", groupName).Find(&files).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Database error: " + err.Error()})
+		return
+	}
+
+	if len(files) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No files found for group " + groupName})
+		return
+	}
+
+	zipWriter := zip.NewWriter(c.Writer)
+	defer zipWriter.Close()
+
+	c.Header("Content-Type", "application/zip")
+	c.Header("Content-Disposition", fmt.Sprintf("attachment; filename=%s.zip", groupName))
+
+	var errs []string
+
+	for _, file := range files {
+		sanitized, err := utils.SanitizeFilename(file.Filename)
+		if err != nil {
+			errs = append(errs, fmt.Sprintf("%s: invalid filename", file.Filename))
+			continue
+		}
+
+		filePath := filepath.Join(uploadDir, sanitized)
+		if _, err := os.Stat(filePath); err != nil {
+			errs = append(errs, fmt.Sprintf("%s: file not found", file.Filename))
+			continue
+		}
+
+		data, err := os.Open(filePath)
+		if err != nil {
+			errs = append(errs, fmt.Sprintf("%s: read error", file.Filename))
+			continue
+		}
+		defer data.Close()
+
+		header := &zip.FileHeader{
+			Name:     file.Filename,
+			Method:   zip.Deflate,
+			Modified: time.Now(),
+		}
+
+		fw, err := zipWriter.CreateHeader(header)
+		if err != nil {
+			errs = append(errs, fmt.Sprintf("%s: zip creation failed", file.Filename))
+			continue
+		}
+
+		if _, err := io.Copy(fw, data); err != nil {
+			errs = append(errs, fmt.Sprintf("%s: copy failed", file.Filename))
+		}
+	}
+
+	if len(errs) > 0 {
+		c.Header("X-Errors", strings.Join(errs, "|"))
+	}
 }
 
 func GetSavedUploadsInformation(c *gin.Context) {
@@ -233,50 +289,25 @@ func GetSavedUploadsInformation(c *gin.Context) {
 func GetSingleFileInformation(c *gin.Context) {
 	shortLink := c.Param("shortLink")
 
-	var wg sync.WaitGroup
-	wg.Add(2)
-
 	var file models.File
 	var dbErr error
 	var fileExists bool
 	var filePath string
 
-	go func() {
-		defer wg.Done()
-		if err := db.Where(
-			"short_link = ?", shortLink).First(
-			&file).Error; err != nil {
-			dbErr = err
-		}
-	}()
-
-	go func() {
-		defer wg.Done()
-		sanitizedFilename, err := sanitizeFilename(file.Filename)
-		if err != nil {
-			fileExists = false
-			return
-		}
-
-		filePath = filepath.Join(uploadDir, sanitizedFilename)
-		_, err = os.Stat(filePath)
-		fileExists = !os.IsNotExist(err)
-	}()
-
-	done := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(done)
-	}()
-
-	select {
-	case <-done:
-	case <-time.After(timeout):
-		c.JSON(
-			http.StatusInternalServerError,
-			gin.H{"error": "Operation timed out"})
-		return
+	if err := db.Where(
+		"short_link = ?", shortLink).First(
+		&file).Error; err != nil {
+		dbErr = err
 	}
+
+	sanitizedFilename, err := utils.SanitizeFilename(file.Filename)
+	if err != nil {
+		fileExists = false
+	}
+
+	filePath = filepath.Join(uploadDir, sanitizedFilename)
+	_, err = os.Stat(filePath)
+	fileExists = !os.IsNotExist(err)
 
 	if dbErr != nil {
 		if dbErr == gorm.ErrRecordNotFound {
@@ -319,29 +350,29 @@ func DeleteFile(c *gin.Context) {
 		return
 	}
 
-	sanitizedFilename, err := sanitizeFilename(file.Filename)
+	sanitizedFilename, err := utils.SanitizeFilename(file.Filename)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid filename"})
 		return
 	}
 
-	var deleteErrors []string
+	var errs []string
 	filePath := filepath.Join(uploadDir, sanitizedFilename)
 
 	if err := os.Remove(filePath); err != nil {
 		if !os.IsNotExist(err) {
-			deleteErrors = append(deleteErrors, "File deletion error: "+err.Error())
+			errs = append(errs, "File deletion error: "+err.Error())
 		}
 	}
 
 	if err := db.Delete(&file).Error; err != nil {
-		deleteErrors = append(deleteErrors, "Database deletion error: "+err.Error())
+		errs = append(errs, "Database deletion error: "+err.Error())
 	}
 
-	if len(deleteErrors) > 0 {
+	if len(errs) > 0 {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error":   "Partial deletion occurred",
-			"details": deleteErrors,
+			"details": errs,
 		})
 		return
 	}
@@ -353,4 +384,29 @@ func DeleteFile(c *gin.Context) {
 			"filename":   file.Filename,
 		},
 	})
+}
+
+func cleanupUpload(shortLink, filename string) {
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		filePath := filepath.Join(uploadDir, filename)
+		if err := os.Remove(filePath); err != nil {
+			log.Printf("Error deleting file %s: %v", filePath, err)
+		}
+	}()
+
+	go func() {
+		defer wg.Done()
+		if err := db.Where(
+			"short_link = ?", shortLink).Delete(
+			&models.File{}).Error; err != nil {
+			log.Printf("Error deleting database record for %s: %v", shortLink, err)
+		}
+	}()
+
+	wg.Wait()
+	log.Printf("Cleanup completed for %s", shortLink)
 }
