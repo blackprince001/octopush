@@ -9,7 +9,6 @@ services:
       - SHORT_LEN=8
       - SERVER_PORT=8081
       - STORAGE_PATH=./uploads
-      - DOWNLOAD_TIMEOUT=5
     volumes:
       - storage:/server/uploads
       - db:/server/db
