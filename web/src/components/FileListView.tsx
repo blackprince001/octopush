@@ -133,6 +133,10 @@ export default function FileListView({ files, onDelete }: FileListViewProps) {
                 </div>
               </TableCell>
               <TableCell className="hidden md:table-cell">
+                <div className="text-sm">{file.group_name}</div>
+                <div className="text-xs text-muted-foreground">{file.group_name}</div>
+              </TableCell>
+              <TableCell className="hidden md:table-cell">
                 <div className="text-sm">{format(new Date(file.time_updated), "PPP")}</div>
                 <div className="text-xs text-muted-foreground">{format(new Date(file.time_updated), "p")}</div>
               </TableCell>

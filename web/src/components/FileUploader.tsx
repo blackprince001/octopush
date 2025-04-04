@@ -4,18 +4,19 @@ import { useState, useRef, type DragEvent, type ChangeEvent } from "react"
 import { Upload, X } from "lucide-react"
 import { Button } from "./ui/button"
 import { Progress } from "./ui/progress"
-import { uploadFile } from "../services/api"
+import { uploadFile, uploadMultipleFiles } from "../services/api"
 import toast from "react-hot-toast"
 
 interface FileUploaderProps {
-  onUploadSuccess?: (shortLink: string) => void
+  onUploadSuccess?: (shortLinks: string[]) => void
 }
 
 export default function FileUploader({ onUploadSuccess }: FileUploaderProps) {
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [groupName, setGroupName] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
@@ -33,18 +34,18 @@ export default function FileUploader({ onUploadSuccess }: FileUploaderProps) {
     setIsDragging(false)
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      setFile(e.dataTransfer.files[0])
+      setFiles((prevFiles) => [...prevFiles, ...Array.from(e.dataTransfer.files)])
     }
   }
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0])
+      setFiles((prevFiles) => [...prevFiles, ...Array.from(e.target.files || [])])
     }
   }
 
   const handleUpload = async () => {
-    if (!file) return
+    if (files.length === 0) return
 
     setIsUploading(true)
     setProgress(0)
@@ -57,39 +58,51 @@ export default function FileUploader({ onUploadSuccess }: FileUploaderProps) {
         })
       }, 300)
 
-      const response = await uploadFile(file)
+      let responses
+      if (files.length === 1) {
+        responses = [await uploadFile(files[0])]
+      } else {
+        const finalGroupName = groupName.trim() || `group-${Date.now()}`
+        responses = await uploadMultipleFiles(files, finalGroupName)
+      }
 
       clearInterval(progressInterval)
       setProgress(100)
 
-      toast.success("File uploaded successfully!")
+      toast.success("Files uploaded successfully!")
 
       if (onUploadSuccess) {
-        onUploadSuccess(response.url)
+        if (Array.isArray(responses)) {
+          onUploadSuccess(responses.map((response: { url: string }) => response.url))
+        } else {
+          onUploadSuccess(responses.urls)
+        }
       }
 
       setTimeout(() => {
-        setFile(null)
+        setFiles([])
         setProgress(0)
         setIsUploading(false)
+        setGroupName("")
       }, 1000)
     } catch (error) {
       console.error("Upload error:", error)
-      toast.error("Failed to upload file. Please try again.")
+      toast.error("Failed to upload files. Please try again.")
       setIsUploading(false)
       setProgress(0)
     }
   }
 
   const handleCancel = () => {
-    setFile(null)
+    setFiles([])
     setProgress(0)
     setIsUploading(false)
+    setGroupName("")
   }
 
   return (
     <div className="w-full max-w-2xl mx-auto">
-      {!file ? (
+      {files.length === 0 ? (
         <div
           className={`file-drop-area ${isDragging ? "drag-active" : ""}`}
           onDragOver={handleDragOver}
@@ -102,38 +115,74 @@ export default function FileUploader({ onUploadSuccess }: FileUploaderProps) {
               <Upload className="h-8 w-8 text-primary" />
             </div>
             <div className="text-center">
-              <h3 className="text-lg font-medium">Drag and drop your file here</h3>
+              <h3 className="text-lg font-medium">Drag and drop your files here</h3>
               <p className="text-sm text-muted-foreground mt-1">or click to browse your files</p>
             </div>
             <Button variant="outline" type="button">
-              Select File
+              Select Files
             </Button>
           </div>
-          <input type="file" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
+          <input
+            type="file"
+            className="hidden"
+            ref={fileInputRef}
+            onChange={handleFileChange}
+            multiple
+          />
         </div>
       ) : (
         <div className="border rounded-lg p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-md bg-primary/10">
-                <Upload className="h-5 w-5 text-primary" />
+          <div className="space-y-4">
+            {files.map((file, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-md bg-primary/10">
+                    <Upload className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium truncate" title={file.name}>
+                      {file.name}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
+                </div>
+                {!isUploading && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index))
+                    }}
+                    className="text-muted-foreground"
+                  >
+                    <X className="h-5 w-5" />
+                  </Button>
+                )}
               </div>
-              <div className="min-w-0">
-                <p className="font-medium truncate" title={file.name}>
-                  {file.name}
-                </p>
-                <p className="text-sm text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-              </div>
-            </div>
-            {!isUploading && (
-              <Button variant="ghost" size="icon" onClick={handleCancel} className="text-muted-foreground">
-                <X className="h-5 w-5" />
-              </Button>
-            )}
+            ))}
+          </div>
+
+          <div className="mt-4 flex flex-col items-center">
+            <label
+              htmlFor="group-name"
+              className="block text-sm font-medium text-muted-foreground mb-2"
+            >
+              Group Name (optional)
+            </label>
+            <input
+              id="group-name"
+              type="text"
+              value={groupName}
+              onChange={(e) => setGroupName(e.target.value)}
+              className="w-3/4 rounded-lg border border-gray-300 bg-background px-4 py-2 text-center shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+              placeholder="Enter a group name"
+            />
           </div>
 
           {isUploading ? (
-            <div className="space-y-2">
+            <div className="space-y-2 mt-4">
               <Progress value={progress} className="h-2" />
               <div className="flex justify-between text-sm">
                 <span>{progress.toFixed(0)}%</span>
@@ -141,11 +190,11 @@ export default function FileUploader({ onUploadSuccess }: FileUploaderProps) {
               </div>
             </div>
           ) : (
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 mt-4">
               <Button variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button onClick={handleUpload}>Upload File</Button>
+              <Button onClick={handleUpload}>Upload Files</Button>
             </div>
           )}
         </div>
@@ -153,4 +202,3 @@ export default function FileUploader({ onUploadSuccess }: FileUploaderProps) {
     </div>
   )
 }
-

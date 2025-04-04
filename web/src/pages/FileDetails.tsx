@@ -122,6 +122,7 @@ export default function FileDetails() {
               <div className="text-center">
                 <h1 className="text-md font-bold mb-2">{file.file_name}</h1>
                 <p className="text-muted-foreground">Short Link: {file.short_link}</p>
+                <p className="text-muted-foreground">Group Name: {file.group_name}</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-md">
