@@ -1,6 +1,7 @@
 export interface FileType {
   short_link: string
   file_name: string
+  group_name: string
   time_updated: string
 }
 
