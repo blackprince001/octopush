@@ -88,7 +88,7 @@ func UploadFolderHandler(c *gin.Context) {
 	}
 
 	files := form.File["files"]
-	errs := make([]string, len(files))
+	errs := make([]string, 0, len(files))
 
 	for _, file := range files {
 		shortLink := utils.GenerateShortLink(shortLinkLen)
@@ -126,6 +126,8 @@ func UploadFolderHandler(c *gin.Context) {
 			"files_uploaded_count": len(files),
 			"group_name":           groupName,
 		})
+
+		return
 	} else {
 
 		log.Printf("Error uploading some files. All errors related %v", errs)
