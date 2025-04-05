@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { Upload, FileQuestion, Grid, List } from "lucide-react"
+import { Upload, FileQuestion, Grid, List, Folder } from "lucide-react"
 import { Button } from "../components/ui/button"
 import { Card, CardContent } from "../components/ui/card"
 import { Skeleton } from "../components/ui/skeleton"
@@ -16,8 +16,14 @@ import toast from "react-hot-toast"
 
 type ViewMode = "grid" | "list"
 
+interface GroupedFiles {
+  folderName: string
+  files: FileType[]
+}
+
 export default function FilesPage() {
   const [files, setFiles] = useState<FileType[]>([])
+  const [groupedFiles, setGroupedFiles] = useState<GroupedFiles[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
@@ -33,8 +39,10 @@ export default function FilesPage() {
         setFiles(response.files)
         setTotalPages(Math.ceil(response.meta.total / response.meta.page_size))
         setError(null)
+
+        const grouped = groupFilesByName(response.files)
+        setGroupedFiles(grouped)
       } catch (err) {
-        console.error("Error fetching files:", err)
         setError("Failed to load files. Please try again later.")
         toast.error("Failed to load files")
       } finally {
@@ -61,6 +69,23 @@ export default function FilesPage() {
       setViewMode(value as ViewMode)
       localStorage.setItem("octopush-view-mode", value)
     }
+  }
+
+  const groupFilesByName = (files: FileType[]): GroupedFiles[] => {
+    const grouped: Record<string, FileType[]> = {}
+
+    files.forEach((file) => {
+      const folderName = file.group_name || "Ungrouped"
+      if (!grouped[folderName]) {
+        grouped[folderName] = []
+      }
+      grouped[folderName].push(file)
+    })
+
+    return Object.entries(grouped).map(([folderName, files]) => ({
+      folderName,
+      files,
+    }))
   }
 
   return (
@@ -128,7 +153,7 @@ export default function FilesPage() {
             <Button onClick={() => setCurrentPage(1)}>Try Again</Button>
           </CardContent>
         </Card>
-      ) : files.length === 0 ? (
+      ) : groupedFiles.length === 0 ? (
         <Card>
           <CardContent className="p-6 flex flex-col items-center justify-center text-center">
             <FileQuestion className="h-12 w-12 text-muted-foreground mb-4" />
@@ -146,15 +171,23 @@ export default function FilesPage() {
         </Card>
       ) : (
         <>
-          {viewMode === "grid" ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {files.map((file) => (
-                <FileCard key={file.short_link} file={file} />
-              ))}
+          {groupedFiles.map((group) => (
+            <div key={group.folderName} className="mb-8">
+              <h2 className="text-2xl font-bold mb-4 flex items-center">
+                <Folder className="h-5 w-5 mr-2" />
+                {group.folderName}
+              </h2>
+              {viewMode === "grid" ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {group.files.map((file) => (
+                    <FileCard key={file.short_link} file={file} />
+                  ))}
+                </div>
+              ) : (
+                <FileListView files={group.files} />
+              )}
             </div>
-          ) : (
-            <FileListView files={files} />
-          )}
+          ))}
 
           {totalPages > 1 && (
             <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />

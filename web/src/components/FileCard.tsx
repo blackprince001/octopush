@@ -17,7 +17,6 @@ interface FileCardProps {
 export default function FileCard({ file, onDelete }: FileCardProps) {
   const [deletingLinks, setDeletingLinks] = useState<string[]>([])
 
-
   const handleDelete = async (shortLink: string) => {
     if (!window.confirm("Are you sure you want to delete this file?")) return
 
@@ -35,7 +34,6 @@ export default function FileCard({ file, onDelete }: FileCardProps) {
       onDelete?.(shortLink)
       toast.success("File deleted")
     } catch (error) {
-      console.error("Delete error:", error)
       toast.error("Failed to delete file")
     } finally {
       setDeletingLinks(prev => prev.filter(link => link !== shortLink))

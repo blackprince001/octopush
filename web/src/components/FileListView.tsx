@@ -16,7 +16,7 @@ interface FileListViewProps {
   onDelete?: (deletedShortLink: string) => void
 }
 
-type SortField = "file_name" | "time_updated"
+type SortField = "file_name" | "time_updated" | "group_name"
 type SortDirection = "asc" | "desc"
 
 export default function FileListView({ files, onDelete }: FileListViewProps) {
@@ -41,7 +41,6 @@ export default function FileListView({ files, onDelete }: FileListViewProps) {
       onDelete?.(shortLink)
       toast.success("File deleted")
     } catch (error) {
-      console.error("Delete error:", error)
       toast.error("Failed to delete file")
     } finally {
       setDeletingLinks(prev => prev.filter(link => link !== shortLink))
@@ -107,6 +106,12 @@ export default function FileListView({ files, onDelete }: FileListViewProps) {
               <div className="flex items-center">
                 File Name
                 <SortIcon field="file_name" />
+              </div>
+            </TableHead>
+            <TableHead className="cursor-pointer" onClick={() => handleSort("group_name")}>
+              <div className="flex items-center">
+                Group Name
+                <SortIcon field="group_name" />
               </div>
             </TableHead>
             <TableHead className="cursor-pointer" onClick={() => handleSort("time_updated")}>

@@ -30,9 +30,8 @@ export default function FileDetails() {
         setFile(fileData)
         setError(null)
       } catch (err) {
-        console.error("Error fetching file:", err)
         setError("Failed to load file details. The file may not exist or has been removed.")
-        toast.error("Failed to load file details")
+        toast.error("Failed to load file details. The file may not exist or has been removed.")
       } finally {
         setLoading(false)
       }
