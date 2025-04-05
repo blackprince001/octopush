@@ -20,7 +20,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }: Pa
   })
 
   return (
-    <div className="flex items-center justify-center gap-1 mt-6">
+    <div className="flex items-center justify-center gap-1 mt-6 md-6">
       <Button variant="outline" size="icon" onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}>
         <ChevronLeft className="h-4 w-4" />
         <span className="sr-only">Previous page</span>

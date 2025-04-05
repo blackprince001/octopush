@@ -11,7 +11,6 @@ export async function getFiles(page = 1, pageSize = 9): Promise<PaginatedRespons
 
     return await response.json()
   } catch (error) {
-    console.error("API error:", error)
     throw error
   }
 }
@@ -33,7 +32,6 @@ export async function getFileByShortLink(shortLink: string): Promise<FileType> {
 
     return file
   } catch (error) {
-    console.error("API error:", error)
     throw error
   }
 }
@@ -55,7 +53,6 @@ export async function uploadFile(file: File): Promise<{ url: string }> {
     const data = await response.json()
     return { url: data.url }
   } catch (error) {
-    console.error("API error:", error)
     throw error
   }
 }
@@ -65,7 +62,7 @@ export async function uploadMultipleFiles(files: File[], groupName: string): Pro
     const formData = new FormData()
     files.forEach((file) => formData.append("files", file))
 
-    const response = await fetch(`${API_BASE_URL}/files/${groupName}`, {
+    const response = await fetch(`${API_BASE_URL}/files/upload/${groupName}`, {
       method: "POST",
       body: formData,
     })
@@ -77,7 +74,6 @@ export async function uploadMultipleFiles(files: File[], groupName: string): Pro
     const data = await response.json()
     return { urls: data.urls }
   } catch (error) {
-    console.error("API error:", error)
     throw error
   }
 }
