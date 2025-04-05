@@ -69,7 +69,7 @@ export default function FileDetails() {
   const copyDownloadLink = () => {
     if (!shortLink) return
 
-    const downloadUrl = `${API_BASE_URL}/files/download/${shortLink}`
+    const downloadUrl = `${API_BASE_URL}/files/download/item/${shortLink}`
     navigator.clipboard.writeText(downloadUrl)
     setCopied(true)
     toast.success("Download link copied to clipboard")
@@ -151,7 +151,7 @@ export default function FileDetails() {
                 </Button>
 
                 <a
-                  href={`${API_BASE_URL}/files/download/${file.short_link}`}
+                  href={`${API_BASE_URL}/files/download/item/${file.short_link}`}
                   download
                   target="_blank"
                   rel="noopener noreferrer"

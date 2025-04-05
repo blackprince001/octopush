@@ -157,7 +157,7 @@ export default function FileListView({ files, onDelete }: FileListViewProps) {
                     {deletingLinks.includes(file.short_link) ? "Deleting..." : "Delete"}
                   </Button>
                   <a
-                    href={`${API_BASE_URL}/files/download/${file.short_link}`}
+                    href={`${API_BASE_URL}/files/download/item/${file.short_link}`}
                     download
                     target="_blank"
                     rel="noopener noreferrer"

@@ -99,7 +99,7 @@ export default function FileCard({ file, onDelete }: FileCardProps) {
         </div>
 
         <a
-          href={`${API_BASE_URL}/files/download/${file.short_link}`}
+          href={`${API_BASE_URL}/files/download/item/${file.short_link}`}
           download
           target="_blank"
           rel="noopener noreferrer"
