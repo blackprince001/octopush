@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowLeft } from "lucide-react"
 import { Button } from "../components/ui/button"
@@ -8,14 +7,10 @@ import FileUploader from "../components/FileUploader"
 
 export default function Upload() {
   const navigate = useNavigate()
-  const [uploadedShortLink, setUploadedShortLink] = useState<string | null>(null)
 
-  const handleUploadSuccess = (shortLink: string) => {
-    setUploadedShortLink(shortLink)
-
-    // Navigate to the file details page after a short delay
+  const handleUploadSuccess = () => {
     setTimeout(() => {
-      navigate(`/files/${shortLink}`)
+      navigate(`/`)
     }, 500)
   }
 
