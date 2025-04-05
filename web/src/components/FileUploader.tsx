@@ -71,14 +71,6 @@ export default function FileUploader({ onUploadSuccess }: FileUploaderProps) {
 
       toast.success("Files uploaded successfully!")
 
-      if (onUploadSuccess) {
-        if (Array.isArray(responses)) {
-          onUploadSuccess(responses.map((response: { url: string }) => response.url))
-        } else {
-          onUploadSuccess(responses.urls)
-        }
-      }
-
       setTimeout(() => {
         setFiles([])
         setProgress(0)
@@ -86,7 +78,7 @@ export default function FileUploader({ onUploadSuccess }: FileUploaderProps) {
         setGroupName("")
       }, 1000)
     } catch (error) {
-      console.error("Upload error:", error)
+
       toast.error("Failed to upload files. Please try again.")
       setIsUploading(false)
       setProgress(0)
